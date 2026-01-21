@@ -115,28 +115,30 @@ if save_btn:
 # 6. 저장된 기록 보기 (표 & 그래프)
 # --------------------
 st.divider()
+# --------------------
+# 6. 저장된 기록 보기 (표 & 그래프)
+# --------------------
+st.divider()
 st.subheader("📂 저장된 BMI 기록")
 
 col1, col2 = st.columns([1, 1])
 
 if os.path.exists(target_file):
     df = pd.read_csv(target_file)
-    df["날짜"] = pd.to_datetime(df["날짜"])
+    
+    if not df.empty:
+        df["날짜"] = pd.to_datetime(df["날짜"])
+        
+        with col1:
+            # 최근 기록 표 (위에서부터 최신순)
+            available_cols = [col for col in df.columns if col in ["날짜", "이름", "키(cm)", "몸무게(kg)", "BMI", "판정"]]
+            if available_cols:
+                st.dataframe(df[available_cols].sort_values(by="날짜", ascending=False).head(10), use_container_width=True)
 
-    with col1:
-        # 최근 기록 표 (위에서부터 최신순)
-        display_cols = ["날짜", "이름", "키(cm)", "몸무게(kg)", "BMI", "판정"]
-        if not df.empty:
-            st.dataframe(df[display_cols].sort_values(by="날짜", ascending=False).head(10), use_container_width=True)
-        else:
-            st.info("데이터가 없습니다.")
-
-    with col2:
-        # 그래프
-        if not df.empty:
+        with col2:
+            # 그래프
             st.caption("📈 BMI 변화 추이")
-            if user_name:
-                # 해당 사용자 데이터만 필터링
+            if user_name and '이름' in df.columns:
                 user_df = df[df['이름'] == user_name]
                 if not user_df.empty:
                     st.line_chart(user_df.set_index("날짜")["BMI"])
@@ -144,9 +146,10 @@ if os.path.exists(target_file):
                     st.line_chart(df.set_index("날짜")["BMI"])
             else:
                 st.line_chart(df.set_index("날짜")["BMI"])
+    else:
+        st.info("아직 저장된 기록이 없습니다.")
 else:
-    st.warning("아직 저장된 기록이 없습니다.")
-
+    st.info("아직 저장된 기록이 없습니다.")
 # --------------------
 # 7. 목표 몸무게 시뮬레이터 (요청하신 디자인 적용)
 # --------------------
