@@ -1,2 +1,2 @@
 # App.2026
-draft or archive
+2026년엔 진심이지
